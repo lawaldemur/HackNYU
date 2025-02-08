@@ -1,0 +1,37 @@
+{
+    "name": "outplay",
+    "version": "1.0.0",
+    "description": "",
+    "homepage": "https://github.com/lawaldemur/trick-and-take#readme",
+    "bugs": {
+        "url": "https://github.com/lawaldemur/trick-and-take/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/lawaldemur/trick-and-take.git"
+    },
+    "license": "ISC",
+    "author": "Vlad Kartamyshev",
+    "type": "module",
+    "main": "app.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "dependencies": {
+        "@prisma/client": "^6.2.1",
+        "@telegram-apps/init-data-node": "^1.2.2",
+        "@telegram-apps/sdk": "^2.11.3",
+        "axios": "^1.7.9",
+        "body-parser": "^1.20.3",
+        "cors": "^2.8.5",
+        "dotenv": "^16.4.7",
+        "express": "^4.21.2",
+        "http": "^0.0.1-security",
+        "morgan": "^1.10.0",
+        "openai": "^4.79.1",
+        "path": "^0.12.7",
+        "prisma": "^6.2.1",
+        "ws": "^8.18.0",
+        "zod": "^3.24.1"
+    }
+}

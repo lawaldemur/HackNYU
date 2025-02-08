@@ -1,0 +1,71 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider             = "prisma-client-js"
+  recursive_type_depth = -1
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// data models
+model User {
+  id            Int      @id @default(autoincrement())
+  createdAt     DateTime @default(now())
+  tg_id         BigInt   @unique
+  first_name    String?
+  last_name     String?
+  username      String?
+  language_code String?
+  photo_url     String?
+
+  balance  Int       @default(0)
+  payments Payment[]
+
+  messages Message[]
+}
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  cost      Float
+
+  user    User? @relation(fields: [user_id], references: [id])
+  user_id Int?
+
+  topic    Topic? @relation(fields: [topic_id], references: [id])
+  topic_id Int?
+
+  victory  Boolean @default(false)
+  content  String? @db.Text
+  response String? @db.Text
+}
+
+model Topic {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  completed Boolean  @default(false)
+
+  short_desc String
+  topic      String
+
+  messages Message[]
+}
+
+model Payment {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+
+  user    User @relation(fields: [user_id], references: [id])
+  user_id Int
+
+  amount   Int
+  currency String
+
+  payload                    String?
+  telegram_payment_charge_id String?
+  provider_payment_charge_id String?
+}

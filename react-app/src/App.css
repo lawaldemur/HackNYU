@@ -1,0 +1,400 @@
+@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap");
+
+.container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-color: #e8c3c3;
+    color: #ffffff;
+    font-family: "Rajdhani", sans-serif;
+}
+
+.header {
+    padding: 15px 20px;
+    background-color: #1f1f1f;
+    text-align: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+}
+
+.topic-description {
+    padding: 0 0;
+    background-color: #1f1f1f;
+    color: #ffffff;
+    font-size: 18px;
+    font-family: "Rajdhani", sans-serif;
+    text-align: center;
+    border-top: 1px solid #0a0a0a;
+
+    width: 100%;
+}
+
+.open-modal-info {
+    position: relative;
+    top: 3px;
+    left: -3px;
+}
+
+.bank-info {
+    font-family: "Orbitron", monospace;
+    font-size: 18px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    margin: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+}
+
+.stars {
+    color: #f1c40f;
+    margin: 0;
+    font-weight: bold;
+}
+
+.title-paragraph {
+    margin: 0;
+    left: 20px;
+    top: 17px;
+    font-family: "Orbitron", sans-serif;
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    text-shadow: 0 0 10px rgba(139, 32, 239, 0.5);
+}
+
+.info-icon {
+    margin-left: 10px;
+    cursor: pointer;
+    color: #8b20ef;
+    font-size: 20px;
+}
+
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+}
+
+.chat-window {
+    flex: 1;
+    padding: 10px;
+    overflow-y: scroll;
+    background-color: #181818;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    scroll-behavior: smooth;
+    background-image: linear-gradient(
+            0deg,
+            transparent 24%,
+            rgba(139, 32, 239, 0.05) 25%,
+            rgba(139, 32, 239, 0.05) 26%,
+            transparent 27%,
+            transparent 74%,
+            rgba(139, 32, 239, 0.05) 75%,
+            rgba(139, 32, 239, 0.05) 76%,
+            transparent 77%,
+            transparent
+        ),
+        linear-gradient(
+            90deg,
+            transparent 24%,
+            rgba(139, 32, 239, 0.05) 25%,
+            rgba(139, 32, 239, 0.05) 26%,
+            transparent 27%,
+            transparent 74%,
+            rgba(139, 32, 239, 0.05) 75%,
+            rgba(139, 32, 239, 0.05) 76%,
+            transparent 77%,
+            transparent
+        );
+    background-size: 50px 50px;
+}
+
+.message {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+    max-width: 70%;
+    word-wrap: break-word;
+    position: relative;
+    line-height: 1.6;
+    letter-spacing: 0.3px;
+    font-family: "Rajdhani", sans-serif;
+    font-weight: 500;
+    font-size: 17px;
+}
+
+.assistant-message {
+    align-self: flex-start;
+    background: linear-gradient(135deg, #6a15b8, #4a0f82);
+    color: #fff;
+    padding: 14px 18px;
+    border-radius: 18px 18px 18px 3px;
+    box-sizing: border-box;
+    margin-left: 0;
+    box-shadow: 0 3px 10px rgba(139, 32, 239, 0.3);
+    position: relative;
+    border: 1px solid rgba(139, 32, 239, 0.5);
+    box-shadow: inset 0 0 8px rgba(139, 32, 239, 0.3);
+    clip-path: polygon(
+        0 0,
+        100% 0,
+        100% calc(100% - 10px),
+        calc(100% - 10px) 100%,
+        0 100%
+    );
+}
+
+.assistant-message::before {
+    content: "";
+    position: absolute;
+    bottom: -8px;
+    left: -8px;
+    width: 20px;
+    height: 20px;
+    background: linear-gradient(135deg, #6a15b8, #4a0f82);
+    border-radius: 50%;
+    z-index: -1;
+    box-shadow: 0 0 10px rgba(139, 32, 239, 0.4);
+    clip-path: polygon(30% 0, 100% 0, 100% 70%);
+}
+
+.assistant-message::after {
+    background: linear-gradient(
+        90deg,
+        #8b20ef 0%,
+        #ff00ff 50%,
+        transparent 100%
+    );
+    box-shadow: 0 0 10px rgba(255, 0, 255, 0.4);
+    animation: neonPulse 2s infinite;
+}
+
+.user-message {
+    align-self: flex-end;
+    background: linear-gradient(135deg, #404040, #2a2a2a);
+    color: #fff;
+    padding: 14px 18px;
+    border-radius: 18px 18px 3px 18px;
+    box-sizing: border-box;
+    margin-right: 0;
+    position: relative;
+    clip-path: polygon(
+        0 0,
+        100% 0,
+        100% 100%,
+        95% 100%,
+        95% calc(100% + 10px),
+        85% 100%,
+        0 100%
+    );
+
+    margin-bottom: 21px;
+    margin-right: 8px;
+}
+
+.user-message::after {
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        #00ffff 50%,
+        #404040 100%
+    );
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+    animation: neonPulse 2s infinite reverse;
+    clip-path: polygon(0 0, 100% 0, 90% 100%, 10% 100%);
+    bottom: -10px;
+}
+
+.messsage-wrapper {
+    margin-bottom: 20px;
+}
+
+.user-message-wrapper {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: flex-end;
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    margin-top: 10px;
+}
+
+.profile-pic {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 5px;
+}
+
+.user-name {
+    font-size: 12px;
+    color: #ccc;
+    text-align: center;
+}
+
+@keyframes neonPulse {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+.input-container {
+    display: flex;
+    padding: 10px;
+    background-color: #1f1f1f;
+    border-top: 1px solid #333;
+}
+
+.input {
+    flex: 1;
+    padding: 10px 15px;
+    font-family: "Share Tech Mono", monospace;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px 0 0 5px;
+    background-color: #333;
+    color: #fff;
+    outline: none;
+}
+
+.button {
+    /* padding: 10px 20px; */
+    font-family: "Rajdhani", sans-serif;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 16px;
+    border: none;
+    border-radius: 0 5px 5px 0;
+    background-color: #8b20ef;
+    color: #fff;
+    cursor: pointer;
+    transition: background-color 0.3s;
+
+    width: 70px;
+    height: 55px;
+}
+
+.spinning {
+    letter-spacing: 1px;
+    animation: spin 2s linear infinite;
+    font-size: 27px;
+    color: #fff;
+    margin-top: 5px;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.footer {
+    padding: 10px;
+    background-color: #1f1f1f;
+    text-align: center;
+    border-top: 1px solid #333;
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+}
+
+.modal-content {
+    background-color: #1f1f1f;
+    padding: 20px;
+    border-radius: 10px;
+    width: 80%;
+    max-width: 500px;
+    color: #fff;
+    font-family: "Rajdhani", sans-serif;
+    text-align: center;
+}
+
+.modal-title {
+    margin-top: 0;
+}
+
+.modal-text {
+    margin-bottom: 20px;
+}
+
+.close-button {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #8b20ef;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: "Rajdhani", sans-serif;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 10px auto 5px;
+    display: block;
+}
+
+.send-icon {
+    font-size: 22px;
+    margin-top: 7px;
+}
+
+.balance-paragraph {
+    margin: 10px 0 15px;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+.buy-balance {
+    display: inline-block;
+    transform: translateY(2px);
+    margin-left: 3px;
+    color: #f1c40f;
+}
+
+.star-symbol {
+    position: relative;
+    line-height: 0;
+    letter-spacing: 1px;
+}
+
+.stars .star-symbol {
+    font-size: 30px;
+}
+.balance-paragraph .star-symbol,
+.message-cost-paragraph .star-symbol {
+    font-size: 15px;
+}
