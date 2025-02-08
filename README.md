@@ -1,1 +1,1 @@
-# trick-and-take
+# Outplay LLM & Win SOL
