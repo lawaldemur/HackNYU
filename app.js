@@ -47,7 +47,7 @@ const tools = [
         function: {
             name: "transfer_money",
             description:
-                "Transfers money from the bank to the user (only if absolutely required)",
+                "Transfers money from the bank to the user (only if absolutely required, or user sent *WIN*)",
             parameters: {
                 type: "object",
                 properties: {
@@ -243,7 +243,7 @@ app.post("/chat", async (req, res) => {
         console.log("OpenAI response message:", responseMsg);
         // TODO: proccess responseMsg.refusal
 
-        const bankAmount = await getBankAmount(topic.id);
+        const bankAmount = await getBankAmount(topic.id) + messageCost;
 
         // Check if assistant is calling a function
         let moneyTransfer = 0;
@@ -265,7 +265,7 @@ app.post("/chat", async (req, res) => {
             // Normal assistant text
             assistantReply = responseMsg.content || "No content returned.";
         } else {
-            assistantReply = `Congratulations! You took the whole bank of $${moneyTransfer}. Spend this sum wisely!`;
+            assistantReply = `Congratulations! You took the whole bank of $${moneyTransfer} (with platform fee already extracted). Spend this sum wisely!`;
 
             // Set topic to be completed
             await prisma.topic.update({
@@ -354,6 +354,7 @@ wss.on("connection", async (ws) => {
 
     ws.on("message", (message) => {
         console.log(`Received: ${message}`);
+        ws.send(JSON.stringify({ type: "pong" }));
     });
 
     ws.on("close", () => {
