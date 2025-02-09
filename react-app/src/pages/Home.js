@@ -34,6 +34,7 @@ export const Home = () => {
 
     const [topicId, setTopicId] = useState(1);
     const [topicDesc, setTopicDesc] = useState("");
+    const [topicFinished, setTopicFinished] = useState(false);
     const [messageCost, setMessageCost] = useState(1);
 
     const wallet = useAnchorWallet();
@@ -84,6 +85,7 @@ export const Home = () => {
                     setMessageCost(parsed.data.messageCost);
                     setBankAmount(parsed.data.bankAmount);
                     setTopicId(parsed.data.topicId);
+                    setTopicFinished(parsed.data.topicFinished);
                 } else if (parsed.event == "chatConfidence") {
                     setScore(parsed.data.confidence);
                 }
@@ -131,6 +133,20 @@ export const Home = () => {
     }, [topicId]);
 
     const handleSendMessage = async () => {
+        if (topicFinished) {
+            try {
+                const response = await axios.post(
+                    `${process.env.REACT_APP_API_URL}/set-new-topic/`,
+                    { topic: userInput }
+                );
+                console.log("New topic set successfully:", response.data);
+                window.location.reload();
+            } catch (error) {
+                console.error("Error setting new topic:", error);
+            }
+            return;
+        }
+
         setIsLoading(true);
         const address = await depositToBank(messageCost * 10_000_000);
 
@@ -333,6 +349,13 @@ export const Home = () => {
                             )}
                         </div>
                     ))}
+                    {topicFinished && (
+                        <div className="new-topic-message">
+                            Send a meessage
+                            <br />
+                            with a new topic idea
+                        </div>
+                    )}
                 </div>
                 <div className="input-container">
                     <input

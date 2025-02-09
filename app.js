@@ -404,7 +404,9 @@ app.post("/chat", async (req, res) => {
 // WebSocket connection handling for chat history updates
 wss.on("connection", async (ws) => {
     console.log("New websocket client connected");
-    const topicId = await fetchLatestTopicId();
+    const topic = await fetchLatestTopic();
+    const topicId = topic.id;
+    const topicFinished = topic.completed;
 
     try {
         const chatHistory = formatMessages(await fetchChatHistory(topicId));
@@ -422,6 +424,7 @@ wss.on("connection", async (ws) => {
                     messageCost: await fetchMessageCost(topicId),
                     bankAmount: await getBankAmount(topicId),
                     topicId: topicId,
+                    topicFinished: topicFinished,
                 },
             })
         );
@@ -621,7 +624,7 @@ async function fetchMessageCost(topicId) {
  * Fetches the latest topic ID from the database.
  * @returns {Promise<number|null>} - The ID of the latest topic or null if no topics exist.
  */
-async function fetchLatestTopicId() {
+async function fetchLatestTopic() {
     try {
         const latestTopic = await prisma.topic.findFirst({
             orderBy: {
@@ -629,9 +632,10 @@ async function fetchLatestTopicId() {
             },
             select: {
                 id: true,
+                completed: true,
             },
         });
-        return latestTopic ? latestTopic.id : null;
+        return latestTopic;
     } catch (error) {
         console.error("Error fetching latest topic ID:", error);
         return null;
@@ -657,6 +661,51 @@ async function fetchTopicData(topicId) {
         return 0;
     }
 }
+
+/**
+ * Creates a new topic in the database.
+ * @param {string} shortDesc - A short description of the topic.
+ * @param {string} topic - The main content or title of the topic.
+ * @returns {Promise<object>} - The newly created topic object.
+ */
+async function createNewTopic(shortDesc, topic) {
+    try {
+        const newTopic = await prisma.topic.create({
+            data: {
+                short_desc: shortDesc,
+                topic: topic,
+            },
+        });
+        return newTopic;
+    } catch (error) {
+        console.error("Error creating new topic:", error);
+        throw new Error("Failed to create new topic");
+    }
+}
+
+/**
+ * POST /create-topic
+ * Creates a new topic with a short description and main content.
+ */
+app.post("/set-new-topic", async (req, res) => {
+    const { topic } = req.body;
+    if (!topic) {
+        return res
+            .status(400)
+            .json({ status: "error", message: "Topic is required" });
+    }
+
+    try {
+        const newTopic = await createNewTopic("Disprove " + topic, topic);
+        res.json({ status: "success", topic: newTopic });
+    } catch (error) {
+        console.error("Error creating new topic:", error);
+        res.status(500).json({
+            status: "error",
+            message: "Failed to create new topic",
+        });
+    }
+});
 
 /**
  * GET /get-bank-amount
