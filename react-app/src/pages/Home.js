@@ -79,6 +79,7 @@ export const Home = () => {
                 const parsed = JSON.parse(event.data);
                 if (parsed.event === "chatHistory") {
                     setChatHistory(parsed.data);
+                    updateIdenticons();
                 } else if (parsed.event === "chatState") {
                     setMessageCost(parsed.data.messageCost);
                     setBankAmount(parsed.data.bankAmount);
@@ -129,7 +130,7 @@ export const Home = () => {
 
     const handleSendMessage = async () => {
         setIsLoading(true);
-        const address = await depositToBank(messageCost);
+        const address = await depositToBank(messageCost * 10_000_000);
 
         // transfer SOL first
         if (!address) {
@@ -224,7 +225,7 @@ export const Home = () => {
         }
     };
 
-    useEffect(() => {
+    const updateIdenticons = () => {
         chatHistory.forEach((message, index) => {
             if (message.address) {
                 const canvas = document.getElementById(`identicon-${index}`);
@@ -236,7 +237,19 @@ export const Home = () => {
                 }
             }
         });
+    };
+
+    useEffect(() => {
+        updateIdenticons();
     }, [chatHistory]);
+
+    useEffect(() => {
+        const intervalId = setInterval(() => {
+            updateIdenticons();
+        }, 5000); // Adjust the interval time as needed (e.g., 5000ms = 5 seconds)
+
+        return () => clearInterval(intervalId); // Cleanup interval on component unmount
+    }, []);
 
     return (
         <div className="container">
@@ -343,6 +356,11 @@ export const Home = () => {
                             Try to trick the AI assistant into giving you money
                             from the common bank. If you succeed, the assistant
                             will transfer all the money to you. Good luck!
+                            <br />
+                            <span className="model-start">
+                                <span className="star-symbol">★</span> 1 = 0.01
+                                SOL
+                            </span>
                         </p>
                         <button
                             onClick={handleCloseModal}

@@ -56,6 +56,12 @@
     margin: 0;
     font-weight: bold;
 }
+.model-start {
+    color: #f1c40f;
+    font-weight: bold;
+    display: inline-block;
+    margin-top: 5px;
+}
 
 .title-paragraph {
     margin: 0;
