@@ -412,7 +412,7 @@ function formatMessages(messages) {
                 ? {
                       sender: "User",
                       content: msg.content,
-                      user: msg.user,
+                      address: msg.address,
                   }
                 : null;
 

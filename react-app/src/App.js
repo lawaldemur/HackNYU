@@ -5,7 +5,6 @@ import "./App.css";
 import { FaInfoCircle } from "react-icons/fa";
 import { FiSend } from "react-icons/fi";
 import { BiLoaderAlt } from "react-icons/bi";
-import { BsDatabaseFillAdd } from "react-icons/bs";
 
 function App() {
     const [bankAmount, setBankAmount] = useState(0);
@@ -188,7 +187,7 @@ function App() {
                                 </div>
                             </div>
 
-                            {message.sender === "User" && message.address && (
+                            {message.address && (
                                 <div className="user-info">
                                     <img
                                         src={
