@@ -130,14 +130,11 @@ export const Home = () => {
         setUserInput("");
         setIsLoading(true);
         try {
-            const response = await axios.post(
-                `${process.env.REACT_APP_API_URL}/chat/`,
-                {
-                    topicId: topicId,
-                    messageCost: messageCost,
-                    message: userInput,
-                }
-            );
+            await axios.post(`${process.env.REACT_APP_API_URL}/chat/`, {
+                topicId: topicId,
+                messageCost: messageCost,
+                message: userInput,
+            });
         } catch (error) {
             console.error("Error communicating with the backend:", error);
             // Optionally, display an error message to the user
