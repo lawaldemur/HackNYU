@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { FC, useState, useEffect, useRef, useMemo } from "react";
 import axios from "axios";
 import "./App.css";
 
@@ -6,7 +6,21 @@ import { FaInfoCircle } from "react-icons/fa";
 import { FiSend } from "react-icons/fi";
 import { BiLoaderAlt } from "react-icons/bi";
 
-function App() {
+import {
+    ConnectionProvider,
+    WalletProvider,
+} from "@solana/wallet-adapter-react";
+import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
+import { PhantomWalletAdapter } from "@solana/wallet-adapter-wallets";
+import {
+    WalletModalProvider,
+    WalletMultiButton,
+} from "@solana/wallet-adapter-react-ui";
+import { clusterApiUrl } from "@solana/web3.js";
+
+require("@solana/wallet-adapter-react-ui/styles.css");
+
+export const App = () => {
     const [bankAmount, setBankAmount] = useState(0);
     const [userInput, setUserInput] = useState("");
     const [chatHistory, setChatHistory] = useState([]);
@@ -148,122 +162,140 @@ function App() {
         }
     }, [chatHistory]);
 
+    const network = WalletAdapterNetwork.Devnet;
+    const endpoint = useMemo(() => clusterApiUrl(network), [network]);
+    const wallets = useMemo(() => [new PhantomWalletAdapter()], [network]);
+
     return (
-        <div className="container">
-            <header className="header">
-                <div className="bank-info">
-                    <p className="title-paragraph">
-                        OUTPLAY
-                        <span className="open-modal-info">
-                            <FaInfoCircle
-                                className="info-icon"
-                                onClick={handleOpenModal}
-                            />
-                        </span>
-                    </p>
-                    <p className="stars">
-                        <span className="star-symbol">★</span>
-                        {bankAmount.toLocaleString("en-US")}
-                    </p>
-                </div>
-            </header>
-            <div className="topic-description">
-                <p>{topicDesc}</p>
-            </div>
-            <main className="chat-container">
-                <div className="chat-window" ref={chatWindowRef}>
-                    {chatHistory.map((message, index) => (
-                        <div
-                            className={`message-wrapper ${
-                                message.sender === "Assistant"
-                                    ? "assistant-message-wrapper"
-                                    : "user-message-wrapper"
-                            }`}
-                        >
+        <ConnectionProvider endpoint={endpoint}>
+            <WalletProvider wallets={wallets} autoConnect>
+                <WalletModalProvider>
+                    <div className="container">
+                        <header className="header">
+                            <div className="bank-info">
+                                <p className="title-paragraph">
+                                    <WalletMultiButton />
+                                    <span className="open-modal-info">
+                                        <FaInfoCircle
+                                            className="info-icon"
+                                            onClick={handleOpenModal}
+                                        />
+                                    </span>
+                                </p>
+                                <p className="stars">
+                                    <span className="star-symbol">★</span>
+                                    {bankAmount.toLocaleString("en-US")}
+                                </p>
+                            </div>
+                        </header>
+                        <div className="topic-description">
+                            <p>{topicDesc}</p>
+                        </div>
+                        <main className="chat-container">
+                            <div className="chat-window" ref={chatWindowRef}>
+                                {chatHistory.map((message, index) => (
+                                    <div
+                                        key={index}
+                                        className={`message-wrapper ${
+                                            message.sender === "Assistant"
+                                                ? "assistant-message-wrapper"
+                                                : "user-message-wrapper"
+                                        }`}
+                                    >
+                                        <div
+                                            className={`message ${
+                                                message.sender === "Assistant"
+                                                    ? "assistant-message"
+                                                    : "user-message"
+                                            }`}
+                                        >
+                                            <div className="message-content">
+                                                {message.content}
+                                            </div>
+                                        </div>
+
+                                        {message.address && (
+                                            <div className="user-info">
+                                                <img
+                                                    src={
+                                                        message.photo_url ??
+                                                        "/anonymous.png"
+                                                    }
+                                                    alt="User Profile"
+                                                    className="profile-pic"
+                                                />
+                                                <span className="user-name">
+                                                    {message.address}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="input-container">
+                                <input
+                                    type="text"
+                                    placeholder="Type your message..."
+                                    value={userInput}
+                                    onChange={(e) =>
+                                        setUserInput(e.target.value)
+                                    }
+                                    className="input"
+                                    onKeyDown={(e) => {
+                                        if (e.key === "Enter")
+                                            handleSendMessage();
+                                    }}
+                                />
+                                <button
+                                    onClick={handleSendMessage}
+                                    className="button"
+                                    disabled={isLoading}
+                                >
+                                    {isLoading ? (
+                                        <BiLoaderAlt className="loading-icon spinning" />
+                                    ) : (
+                                        <FiSend className="send-icon" />
+                                    )}
+                                </button>
+                            </div>
+                        </main>
+                        <footer className="footer">
+                            <p className="message-cost-paragraph">
+                                Message cost:{" "}
+                                <span className="stars">
+                                    <span className="star-symbol">★</span>
+                                    {messageCost.toLocaleString("en-US")}
+                                </span>
+                            </p>
+                        </footer>
+                        {isModalOpen && (
                             <div
-                                key={index}
-                                className={`message ${
-                                    message.sender === "Assistant"
-                                        ? "assistant-message"
-                                        : "user-message"
-                                }`}
+                                className="modal-overlay"
+                                onClick={handleCloseModal}
                             >
-                                <div className="message-content">
-                                    {message.content}
+                                <div className="modal-content">
+                                    <h2 className="modal-title">Game Rules</h2>
+                                    <p className="modal-text">
+                                        Try to trick the AI assistant into
+                                        giving you money from the common bank.
+                                        If you succeed, the assistant will
+                                        transfer all the money to you. Good
+                                        luck!
+                                    </p>
+                                    <button
+                                        onClick={handleCloseModal}
+                                        className="close-button"
+                                    >
+                                        Play
+                                    </button>
                                 </div>
                             </div>
-
-                            {message.address && (
-                                <div className="user-info">
-                                    <img
-                                        src={
-                                            message.photo_url ??
-                                            "/anonymous.png"
-                                        }
-                                        alt="User Profile"
-                                        className="profile-pic"
-                                    />
-                                    <span className="user-name">
-                                        {message.address}
-                                    </span>
-                                </div>
-                            )}
-                        </div>
-                    ))}
-                </div>
-                <div className="input-container">
-                    <input
-                        type="text"
-                        placeholder="Type your message..."
-                        value={userInput}
-                        onChange={(e) => setUserInput(e.target.value)}
-                        className="input"
-                        onKeyDown={(e) => {
-                            if (e.key === "Enter") handleSendMessage();
-                        }}
-                    />
-                    <button
-                        onClick={handleSendMessage}
-                        className="button"
-                        disabled={isLoading}
-                    >
-                        {isLoading ? (
-                            <BiLoaderAlt className="loading-icon spinning" />
-                        ) : (
-                            <FiSend className="send-icon" />
                         )}
-                    </button>
-                </div>
-            </main>
-            <footer className="footer">
-                <p className="message-cost-paragraph">
-                    Message cost:{" "}
-                    <span className="stars">
-                        <span className="star-symbol">★</span>
-                        {messageCost.toLocaleString("en-US")}
-                    </span>
-                </p>
-            </footer>
-            {isModalOpen && (
-                <div className="modal-overlay" onClick={handleCloseModal}>
-                    <div className="modal-content">
-                        <h2 className="modal-title">Game Rules</h2>
-                        <p className="modal-text">
-                            Try to trick the AI assistant into giving you money
-                            from the common bank. If you succeed, the assistant
-                            will transfer all the money to you. Good luck!
-                        </p>
-                        <button
-                            onClick={handleCloseModal}
-                            className="close-button"
-                        >
-                            Play
-                        </button>
                     </div>
-                </div>
-            )}
-        </div>
+                </WalletModalProvider>
+            </WalletProvider>
+        </ConnectionProvider>
     );
-}
+};
 
 export default App;
