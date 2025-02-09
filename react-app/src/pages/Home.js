@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import "../App.css";
+import { Buffer } from "buffer";
 
 import { FaInfoCircle } from "react-icons/fa";
 import { FiSend } from "react-icons/fi";
@@ -8,6 +9,12 @@ import { BiLoaderAlt } from "react-icons/bi";
 
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
+import {
+    LAMPORTS_PER_SOL,
+    PublicKey,
+    Transaction,
+    SystemProgram,
+} from "@solana/web3.js";
 require("@solana/wallet-adapter-react-ui/styles.css");
 
 export const Home = () => {
@@ -108,9 +115,15 @@ export const Home = () => {
         };
 
         fetchBankAmount();
-    }, []);
+    }, [topicId]);
 
     const handleSendMessage = async () => {
+        // transfer SOL first
+        if (!(await sendSol(0.1))) {
+            console.error("Error sending SOL transaction");
+            return;
+        }
+
         if (userInput.trim() === "" || isLoading) return;
 
         // Add user's message to chat history
@@ -151,9 +164,39 @@ export const Home = () => {
         }
     }, [chatHistory]);
 
-    const [balance, setBalance] = useState(0);
+    const { publicKey, sendTransaction } = useWallet();
     const { connection } = useConnection();
-    const { publicKey } = useWallet();
+    const RECEIVER_PUBLIC_KEY = process.env.REACT_APP_RECEIVER_PUBLIC_KEY;
+
+    // Ensure Buffer is available globally
+    if (typeof window !== "undefined") {
+        window.Buffer = Buffer;
+    }
+
+    const sendSol = async (amount) => {
+        if (!publicKey) {
+            console.error("Wallet not connected");
+            return;
+        }
+
+        try {
+            const recipientPubKey = new PublicKey(RECEIVER_PUBLIC_KEY);
+
+            const transaction = new Transaction();
+            const sendSolInstruction = SystemProgram.transfer({
+                fromPubkey: publicKey,
+                toPubkey: recipientPubKey,
+                lamports: amount * LAMPORTS_PER_SOL,
+            });
+
+            transaction.add(sendSolInstruction);
+
+            const signature = await sendTransaction(transaction, connection);
+            console.log(`Transaction signature: ${signature}`);
+        } catch (error) {
+            console.error("Transaction failed", error);
+        }
+    };
 
     return (
         <div className="container">
