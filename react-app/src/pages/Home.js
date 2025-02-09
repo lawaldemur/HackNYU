@@ -84,6 +84,8 @@ export const Home = () => {
                     setMessageCost(parsed.data.messageCost);
                     setBankAmount(parsed.data.bankAmount);
                     setTopicId(parsed.data.topicId);
+                } else if (parsed.event == "chatConfidence") {
+                    setScore(parsed.data.confidence);
                 }
             } catch (error) {
                 console.error("Error parsing WebSocket message:", error);
@@ -251,6 +253,8 @@ export const Home = () => {
         return () => clearInterval(intervalId); // Cleanup interval on component unmount
     }, []);
 
+    const [score, setScore] = useState(0);
+
     return (
         <div className="container">
             <header className="header">
@@ -272,6 +276,14 @@ export const Home = () => {
             </header>
             <div className="topic-description">
                 <p>{topicDesc}</p>
+            </div>
+            <div className="gauge-meter">
+                <div className="gauge">
+                    <div
+                        className="gauge-fill"
+                        style={{ width: `${score}%` }}
+                    ></div>
+                </div>
             </div>
             <main className="chat-container">
                 <div className="chat-window" ref={chatWindowRef}>

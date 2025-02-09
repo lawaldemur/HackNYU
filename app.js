@@ -382,8 +382,8 @@ app.post("/chat", async (req, res) => {
             );
 
             const chatHistory = formatChatHistory(history);
-            console.info(
-                "Confidence level:",
+
+            broadcastChatConfidence(
                 await evaluateArgumentConfidence(chatHistory)
             );
         } catch (err) {
@@ -536,6 +536,26 @@ function broadcastChatState(messageCost, bankAmount, topicId) {
                         messageCost: messageCost,
                         bankAmount: bankAmount,
                         topicId: topicId,
+                    },
+                })
+            );
+        }
+    });
+}
+
+/**
+ * Sends the current chat state, message cost, and bank amount to all connected WebSocket clients.
+ * @param {number} bankAmount - The current chat history to be sent.
+ * @param {number} messageCost - The cost of the current message.\
+ */
+function broadcastChatConfidence(confidence) {
+    wss.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(
+                JSON.stringify({
+                    event: "chatConfidence",
+                    data: {
+                        confidence: confidence,
                     },
                 })
             );
