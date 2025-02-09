@@ -200,7 +200,7 @@ async function evaluateArgumentConfidence(chatHistory) {
 app.post("/chat", async (req, res) => {
     try {
         // TODO: don't resend the whole chat history, just the new message
-        const { topicId, messageCost, message } = req.body;
+        const { topicId, messageCost, message, address } = req.body;
         console.log("Received message:", message);
 
         // fetch the topic data
@@ -243,7 +243,7 @@ app.post("/chat", async (req, res) => {
         console.log("OpenAI response message:", responseMsg);
         // TODO: proccess responseMsg.refusal
 
-        const bankAmount = await getBankAmount(topic.id) + messageCost;
+        const bankAmount = (await getBankAmount(topic.id)) + messageCost;
 
         // Check if assistant is calling a function
         let moneyTransfer = 0;
@@ -281,7 +281,7 @@ app.post("/chat", async (req, res) => {
         // Save message to the database
         const newMessage = await prisma.message.create({
             data: {
-                address: "TEST",
+                address: address,
                 topic_id: topic.id,
                 content: message,
                 response: assistantReply,

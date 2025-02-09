@@ -24,7 +24,7 @@ const opts = {
     preflightCommitment: "processed",
 };
 
-function Home() {
+function Test() {
     // The Anchor wallet hook gives us the connected wallet context
     const wallet = useAnchorWallet();
     const { connected } = useWallet();
@@ -219,4 +219,4 @@ function Home() {
     );
 }
 
-export default Home;
+export default Test;

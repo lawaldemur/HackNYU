@@ -7,15 +7,22 @@ import { FaInfoCircle } from "react-icons/fa";
 import { FiSend } from "react-icons/fi";
 import { BiLoaderAlt } from "react-icons/bi";
 
-import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import { Connection, PublicKey, SystemProgram } from "@solana/web3.js";
+import { Program, AnchorProvider, BN } from "@project-serum/anchor";
+import { useAnchorWallet, useWallet } from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
-import {
-    LAMPORTS_PER_SOL,
-    PublicKey,
-    Transaction,
-    SystemProgram,
-} from "@solana/web3.js";
-require("@solana/wallet-adapter-react-ui/styles.css");
+import idl from "../idl.json";
+import blockies from "blockies-identicon";
+
+// Ensure Buffer is available globally
+if (typeof window !== "undefined") {
+    window.Buffer = window.Buffer || require("buffer").Buffer;
+}
+const programID = new PublicKey(process.env.REACT_APP_PROGRAM_ID);
+const network = process.env.REACT_APP_NETWORK_URL;
+const opts = {
+    preflightCommitment: "processed",
+};
 
 export const Home = () => {
     const [bankAmount, setBankAmount] = useState(0);
@@ -28,6 +35,9 @@ export const Home = () => {
     const [topicId, setTopicId] = useState(1);
     const [topicDesc, setTopicDesc] = useState("");
     const [messageCost, setMessageCost] = useState(1);
+
+    const wallet = useAnchorWallet();
+    const { connected } = useWallet();
 
     useEffect(() => {
         const fetchTopicDescription = async () => {
@@ -118,8 +128,12 @@ export const Home = () => {
     }, [topicId]);
 
     const handleSendMessage = async () => {
+        setIsLoading(true);
+        const address = await depositToBank(messageCost);
+
         // transfer SOL first
-        if (!(await sendSol(0.1))) {
+        if (!address) {
+            setIsLoading(false);
             console.error("Error sending SOL transaction");
             return;
         }
@@ -128,12 +142,12 @@ export const Home = () => {
 
         // Add user's message to chat history
         setUserInput("");
-        setIsLoading(true);
         try {
             await axios.post(`${process.env.REACT_APP_API_URL}/chat/`, {
                 topicId: topicId,
                 messageCost: messageCost,
                 message: userInput,
+                address: address,
             });
         } catch (error) {
             console.error("Error communicating with the backend:", error);
@@ -161,39 +175,68 @@ export const Home = () => {
         }
     }, [chatHistory]);
 
-    const { publicKey, sendTransaction } = useWallet();
-    const { connection } = useConnection();
-    const RECEIVER_PUBLIC_KEY = process.env.REACT_APP_RECEIVER_PUBLIC_KEY;
+    const getProvider = () => {
+        if (!wallet) return null;
+        const connection = new Connection(network, opts.preflightCommitment);
+        return new AnchorProvider(connection, wallet, opts);
+    };
 
-    // Ensure Buffer is available globally
-    if (typeof window !== "undefined") {
-        window.Buffer = Buffer;
-    }
+    // Helper to find the PDA for the bank (seed = "bank")
+    const findBankPda = async () => {
+        return await PublicKey.findProgramAddress(
+            [Buffer.from("bank")],
+            programID
+        );
+    };
 
-    const sendSol = async (amount) => {
-        if (!publicKey) {
-            console.error("Wallet not connected");
+    const depositToBank = async (depositAmount) => {
+        if (!connected) {
+            console.error("Wallet is not connected.");
+            return;
+        }
+        const provider = getProvider();
+        if (!provider) {
+            console.error("Provider is not available.");
             return;
         }
 
+        const program = new Program(idl, programID, provider);
+        const [bankPda] = await findBankPda();
+
         try {
-            const recipientPubKey = new PublicKey(RECEIVER_PUBLIC_KEY);
+            // Convert depositAmount (string) to BN
+            const lamports = new BN(depositAmount);
 
-            const transaction = new Transaction();
-            const sendSolInstruction = SystemProgram.transfer({
-                fromPubkey: publicKey,
-                toPubkey: recipientPubKey,
-                lamports: amount * LAMPORTS_PER_SOL,
-            });
+            await program.methods
+                .deposit(lamports)
+                .accounts({
+                    user: provider.wallet.publicKey, // who is depositing
+                    bank: new PublicKey(bankPda),
+                    systemProgram: SystemProgram.programId,
+                })
+                .rpc();
 
-            transaction.add(sendSolInstruction);
-
-            const signature = await sendTransaction(transaction, connection);
-            console.log(`Transaction signature: ${signature}`);
-        } catch (error) {
-            console.error("Transaction failed", error);
+            console.log(`Deposited ${depositAmount} lamports!`);
+            return provider.wallet.publicKey;
+        } catch (err) {
+            console.error("Error depositing:", err);
+            return false;
         }
     };
+
+    useEffect(() => {
+        chatHistory.forEach((message, index) => {
+            if (message.address) {
+                const canvas = document.getElementById(`identicon-${index}`);
+                if (canvas) {
+                    const icon = blockies.create({ seed: message.address });
+                    const context = canvas.getContext("2d");
+                    context.clearRect(0, 0, canvas.width, canvas.height);
+                    context.drawImage(icon, 0, 0, canvas.width, canvas.height);
+                }
+            }
+        });
+    }, [chatHistory]);
 
     return (
         <div className="container">
@@ -242,16 +285,17 @@ export const Home = () => {
 
                             {message.address && (
                                 <div className="user-info">
-                                    <img
-                                        src={
-                                            message.photo_url ??
-                                            "/anonymous.png"
-                                        }
-                                        alt="User Profile"
+                                    <canvas
+                                        id={`identicon-${index}`}
+                                        width="100"
+                                        height="100"
                                         className="profile-pic"
-                                    />
+                                    ></canvas>
                                     <span className="user-name">
-                                        {message.address}
+                                        {`${message.address.slice(
+                                            0,
+                                            3
+                                        )}...${message.address.slice(-4)}`}
                                     </span>
                                 </div>
                             )}

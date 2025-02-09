@@ -69,10 +69,11 @@
 }
 
 .info-icon {
-    margin-left: 10px;
+    margin-left: 15px;
     cursor: pointer;
     color: #8b20ef;
     font-size: 20px;
+    margin-bottom: 5px;
 }
 
 .chat-container {
