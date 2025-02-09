@@ -81,9 +81,9 @@ function App() {
 
         setInterval(() => {
             if (socket.readyState === WebSocket.OPEN) {
-              socket.send(JSON.stringify({ type: "ping" }));
+                socket.send(JSON.stringify({ type: "ping" }));
             }
-          }, 30000);
+        }, 30000);
 
         // Cleanup on unmount: close the socket
         return () => {
