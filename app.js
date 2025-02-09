@@ -390,7 +390,9 @@ app.post("/chat", async (req, res) => {
             console.error("Failed to broadcast chat history:", err);
         }
 
-        return res.json({});
+        return res.json({
+            result: moneyTransfer !== 0 ? "victory" : "continue",
+        });
     } catch (error) {
         console.error("Error during GPT completion:", error);
         return res

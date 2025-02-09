@@ -146,12 +146,19 @@ export const Home = () => {
         // Add user's message to chat history
         setUserInput("");
         try {
-            axios.post(`${process.env.REACT_APP_API_URL}/chat/`, {
-                topicId: topicId,
-                messageCost: messageCost,
-                message: userInput,
-                address: address,
-            });
+            const response = await axios.post(
+                `${process.env.REACT_APP_API_URL}/chat/`,
+                {
+                    topicId: topicId,
+                    messageCost: messageCost,
+                    message: userInput,
+                    address: address,
+                }
+            );
+
+            if (response.data.result === "victory") {
+                setScore(100);
+            }
         } catch (error) {
             console.error("Error communicating with the backend:", error);
             // Optionally, display an error message to the user
