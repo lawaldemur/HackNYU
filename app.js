@@ -1,7 +1,6 @@
 import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
-import axios from "axios";
 import path from "path";
 import { PrismaClient } from "@prisma/client";
 import bodyParser from "body-parser";
@@ -12,6 +11,11 @@ import { createServer } from "http";
 import { WebSocketServer } from "ws";
 import { z } from "zod";
 import { zodResponseFormat } from "openai/helpers/zod";
+import { PublicKey, SystemProgram, Connection, Keypair } from "@solana/web3.js";
+import pkg from "@project-serum/anchor";
+import fs from "fs";
+import bip39 from "bip39";
+import { derivePath } from "ed25519-hd-key";
 
 dotenv.config({ override: true });
 
@@ -65,12 +69,78 @@ const tools = [
 ];
 
 // -------------------- HELPER FUNCTIONS -------------------- //
+class Wallet {
+    constructor(keypair) {
+        this.keypair = keypair;
+    }
+
+    async signTransaction(transaction) {
+        transaction.partialSign(this.keypair);
+        return transaction;
+    }
+
+    async signAllTransactions(transactions) {
+        return transactions.map((transaction) => {
+            transaction.partialSign(this.keypair);
+            return transaction;
+        });
+    }
+
+    get publicKey() {
+        return this.keypair.publicKey;
+    }
+}
 /**
  * Transfer the entire bank amount to a user.
  * The user receives (1 - PLATFORM_FEE) of bankAmount
  */
-function transferMoney(bankAmount) {
-    return bankAmount * (1 - PLATFORM_FEE);
+async function transferMoney(bankAmount, recipientAddress) {
+    const { Program, AnchorProvider, BN } = pkg;
+    const network = process.env.REACT_APP_NETWORK_URL;
+    const programID = new PublicKey(process.env.REACT_APP_PROGRAM_ID);
+    const seed = bip39.mnemonicToSeedSync(process.env.WALLET_SEED);
+    const derivedSeed = derivePath(
+        "m/44'/501'/0'/0'",
+        seed.toString("hex")
+    ).key;
+    const walletKeypair = Keypair.fromSeed(derivedSeed);
+    const recipient = new PublicKey(recipientAddress);
+    const connection = new Connection(network, "processed");
+    const wallet = new Wallet(walletKeypair); // Use the custom wallet class
+    const provider = new AnchorProvider(connection, wallet, {
+        preflightCommitment: "processed",
+    });
+
+    const idlPath = path.join(__dirname, "./react-app/src/idl.json");
+    const idlContent = fs.readFileSync(idlPath, "utf8");
+    const idl = JSON.parse(idlContent);
+
+    const program = new Program(idl, programID, provider);
+
+    const [bankPda] = await PublicKey.findProgramAddress(
+        [Buffer.from("bank")],
+        programID
+    );
+
+    const amountToTransfer = bankAmount * (1 - PLATFORM_FEE);
+
+    try {
+        await program.methods
+            .payout()
+            .accounts({
+                bank: bankPda,
+                owner: wallet.publicKey,
+                winner: recipient,
+                systemProgram: SystemProgram.programId,
+            })
+            .rpc();
+
+        console.log(`Transferred ${amountToTransfer} lamports to recipient!`);
+    } catch (err) {
+        console.error("Error during transfer:", err);
+    }
+
+    return amountToTransfer;
 }
 
 /**
@@ -255,7 +325,7 @@ app.post("/chat", async (req, res) => {
                 responseMsg.tool_calls[0].function.arguments || "{}"
             );
             if (functionArgs.transfer === true) {
-                moneyTransfer = transferMoney(bankAmount); // actually do the transfer
+                moneyTransfer = transferMoney(bankAmount, address); // actually do the transfer
             }
         }
 

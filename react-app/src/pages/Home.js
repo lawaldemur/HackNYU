@@ -143,7 +143,7 @@ export const Home = () => {
         // Add user's message to chat history
         setUserInput("");
         try {
-            await axios.post(`${process.env.REACT_APP_API_URL}/chat/`, {
+            axios.post(`${process.env.REACT_APP_API_URL}/chat/`, {
                 topicId: topicId,
                 messageCost: messageCost,
                 message: userInput,
