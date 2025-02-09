@@ -38,9 +38,8 @@ const prisma = new PrismaClient();
 const openai = new OpenAI();
 
 // Constants
-const NEW_USER_BALANCE = 100;
 const COST_INCREASE_PER_MESSAGE = 10;
-const PLATFORM_FEE = 0.3;
+const PLATFORM_FEE = 0.1;
 
 const tools = [
     {
@@ -266,12 +265,7 @@ app.post("/chat", async (req, res) => {
             // Normal assistant text
             assistantReply = responseMsg.content || "No content returned.";
         } else {
-            assistantReply = `${
-                user.first_name ||
-                user.last_name ||
-                user.username ||
-                "Anonymous"
-            }, congratulations! You took the whole bank of $${moneyTransfer}. Spend this sum wisely!`;
+            assistantReply = `Congratulations! You took the whole bank of $${moneyTransfer}. Spend this sum wisely!`;
 
             // Set topic to be completed
             await prisma.topic.update({
@@ -287,7 +281,7 @@ app.post("/chat", async (req, res) => {
         // Save message to the database
         const newMessage = await prisma.message.create({
             data: {
-                user_id: 1,
+                address: "TEST",
                 topic_id: topic.id,
                 content: message,
                 response: assistantReply,
@@ -379,16 +373,6 @@ async function fetchChatHistory(topicId) {
     const messages = await prisma.message.findMany({
         where: { topic_id: topicId },
         orderBy: { createdAt: "asc" },
-        include: {
-            user: {
-                select: {
-                    first_name: true,
-                    last_name: true,
-                    username: true,
-                    photo_url: true,
-                },
-            },
-        },
     });
     return messages;
 }

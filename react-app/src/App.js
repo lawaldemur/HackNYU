@@ -106,9 +106,6 @@ function App() {
         if (userInput.trim() === "" || isLoading) return;
 
         // Add user's message to chat history
-        const newUserMessage = { sender: "User", content: userInput };
-        const updatedChatHistory = [...chatHistory, newUserMessage];
-        // Clear user input
         setUserInput("");
         setIsLoading(true);
         try {
@@ -191,21 +188,18 @@ function App() {
                                 </div>
                             </div>
 
-                            {message.sender === "User" && message.user && (
+                            {message.sender === "User" && message.address && (
                                 <div className="user-info">
                                     <img
                                         src={
-                                            message.user.photo_url ??
+                                            message.photo_url ??
                                             "/anonymous.png"
                                         }
                                         alt="User Profile"
                                         className="profile-pic"
                                     />
                                     <span className="user-name">
-                                        {message.user.first_name ||
-                                            message.user.last_name ||
-                                            message.user.username ||
-                                            "Anonymous"}
+                                        {message.address}
                                     </span>
                                 </div>
                             )}

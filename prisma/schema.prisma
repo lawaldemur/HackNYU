@@ -11,30 +11,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// data models
-model User {
-  id            Int      @id @default(autoincrement())
-  createdAt     DateTime @default(now())
-  tg_id         BigInt   @unique
-  first_name    String?
-  last_name     String?
-  username      String?
-  language_code String?
-  photo_url     String?
-
-  balance  Int       @default(0)
-  payments Payment[]
-
-  messages Message[]
-}
-
 model Message {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
-  cost      Float
 
-  user    User? @relation(fields: [user_id], references: [id])
-  user_id Int?
+  address String
+  cost    Float
 
   topic    Topic? @relation(fields: [topic_id], references: [id])
   topic_id Int?
@@ -53,19 +35,4 @@ model Topic {
   topic      String
 
   messages Message[]
-}
-
-model Payment {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-
-  user    User @relation(fields: [user_id], references: [id])
-  user_id Int
-
-  amount   Int
-  currency String
-
-  payload                    String?
-  telegram_payment_charge_id String?
-  provider_payment_charge_id String?
 }
