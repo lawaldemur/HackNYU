@@ -325,7 +325,7 @@ app.post("/chat", async (req, res) => {
                 responseMsg.tool_calls[0].function.arguments || "{}"
             );
             if (functionArgs.transfer === true) {
-                moneyTransfer = transferMoney(bankAmount, address); // actually do the transfer
+                moneyTransfer = await transferMoney(bankAmount, address); // actually do the transfer
             }
         }
 
