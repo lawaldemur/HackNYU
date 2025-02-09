@@ -378,7 +378,8 @@ app.post("/chat", async (req, res) => {
             broadcastChatState(
                 await fetchMessageCost(topic.id),
                 await getBankAmount(topic.id),
-                topic.id
+                topic.id,
+                moneyTransfer > 0
             );
 
             const chatHistory = formatChatHistory(history);
@@ -531,7 +532,7 @@ function broadcastChatHistory(chatHistory) {
  * @param {number} bankAmount - The current chat history to be sent.
  * @param {number} messageCost - The cost of the current message.\
  */
-function broadcastChatState(messageCost, bankAmount, topicId) {
+function broadcastChatState(messageCost, bankAmount, topicId, topicFinished) {
     wss.clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
             client.send(
@@ -541,6 +542,7 @@ function broadcastChatState(messageCost, bankAmount, topicId) {
                         messageCost: messageCost,
                         bankAmount: bankAmount,
                         topicId: topicId,
+                        topicFinished: topicFinished,
                     },
                 })
             );

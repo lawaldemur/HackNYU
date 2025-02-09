@@ -351,9 +351,7 @@ export const Home = () => {
                     ))}
                     {topicFinished && (
                         <div className="new-topic-message">
-                            Send a meessage
-                            <br />
-                            with a new topic idea
+                            Send a new topic idea
                         </div>
                     )}
                 </div>

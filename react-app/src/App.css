@@ -443,9 +443,9 @@
 
 .new-topic-message {
     text-align: center;
-    font-weight: bold;
-    color: #8b20ef;
+    /* font-weight: bold; */
+    /* color: #f1c40f; */
     font-size: 20px;
     font-family: "Orbitron", monospace;
-    margin: 30px 0;
+    margin: 50px 0;
 }
